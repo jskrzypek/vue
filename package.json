@@ -9,6 +9,7 @@
   "files": [
     "src",
     "dist/*.js",
+    "packages/vue-server-renderer/*",
     "types/*.d.ts"
   ],
   "scripts": {
