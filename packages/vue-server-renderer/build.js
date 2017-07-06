@@ -5090,22 +5090,23 @@ Watcher.prototype.get = function get () {
   pushTarget(this);
   var value;
   var vm = this.vm;
-  if (this.user) {
-    try {
-      value = this.getter.call(vm, vm);
-    } catch (e) {
-      handleError(e, vm, ("getter for watcher \"" + (this.expression) + "\""));
-    }
-  } else {
+  try {
     value = this.getter.call(vm, vm);
+  } catch (e) {
+    if (this.user) {
+      handleError(e, vm, ("getter for watcher \"" + (this.expression) + "\""));
+    } else {
+      throw e
+    }
+  } finally {
+    // "touch" every property so they are all tracked as
+    // dependencies for deep watching
+    if (this.deep) {
+      traverse(value);
+    }
+    popTarget();
+    this.cleanupDeps();
   }
-  // "touch" every property so they are all tracked as
-  // dependencies for deep watching
-  if (this.deep) {
-    traverse(value);
-  }
-  popTarget();
-  this.cleanupDeps();
   return value
 };
 
@@ -6074,7 +6075,7 @@ function createBundleRendererCreator (createRenderer) {
 
 process.env.VUE_ENV = 'server';
 
-function createRenderer$$1 (options) {
+function createRenderer (options) {
   if ( options === void 0 ) options = {};
 
   return createRenderer$1(Object.assign({}, options, {
@@ -6087,7 +6088,7 @@ function createRenderer$$1 (options) {
   }))
 }
 
-var createBundleRenderer = createBundleRendererCreator(createRenderer$$1);
+var createBundleRenderer = createBundleRendererCreator(createRenderer);
 
-exports.createRenderer = createRenderer$$1;
+exports.createRenderer = createRenderer;
 exports.createBundleRenderer = createBundleRenderer;
